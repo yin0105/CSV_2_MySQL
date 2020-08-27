@@ -41,6 +41,12 @@
             div.my_container {
                 border: solid 2px #cccccc;
             }
+            a.up_down {
+                color: black;
+            }
+            a.up_down:hover {
+                text-decoration: none;
+            }
         </style>
     </head>
 
@@ -205,13 +211,16 @@
                                 </label>
                                 <p></p>
                                 <div class="m-demo-icon__preview">
-                                    <i class="fa fa-caret-up"></i>
-                                    Up
+                                    <a href="#" class="up_down" id="to_up" name="to_up">
+                                        <i class="fa fa-caret-up"></i> Up
+                                    </a>                                    
                                 </div>
                                 <p></p>
                                 <div class="m-demo-icon__preview">
-                                    <i class="fa fa-caret-down"></i>
-                                    Down
+                                    <a href="#" class="up_down" id="to_down" name="to_down">
+                                        <i class="fa fa-caret-down"></i> Down
+                                    </a>
+                                    
                                 </div>
                                 <p></p>
                                 <div class="m-checkbox-list">
@@ -312,6 +321,19 @@
 
                 $("#tbl_list").change(function(){
                     get_col_list();
+                });
+
+                $("#to_up").click(function() {
+                    var cols = $("#col_list").children("div")
+                    console.log("length = " + $(cols).length)
+                    for($i = 0; $i < $(cols).length; $i++) {
+                        console.log($i + "  :  " + $(cols[$i]).children("label:first").children("input:first").prop("checked"));
+                        console.log($i + "  :  " + $(cols[$i]).val() );
+                        // if ($(cols[$i]).children("input").hasAttribute("checked")) {
+                        //     console.log("checked :: " + $(cols[$i]).children("span").text())
+                        // }
+
+                    }
                 });
             });
 
