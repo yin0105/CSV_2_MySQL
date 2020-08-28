@@ -97,7 +97,7 @@
                         </div> 
                         <div class="col-lg-12 form-group m-form__group row">                    
                             <label class="m-checkbox">
-                                <input type="checkbox" checked="checked">
+                                <input type="checkbox" checked="checked" id="trunc" name="trunc">
                                 Truncate destination table before import
                                 <span></span>
                             </label>
@@ -113,7 +113,7 @@
                                 Fields terminated by 
                             </label>
                             <div class="col-lg-4">
-                                <input class="form-control m-input" type="text" value=";" id="example-text-input">
+                                <input class="form-control m-input" type="text" value="," id="f_term" name="f_term">
                             </div>
                         </div>
                         
@@ -122,11 +122,11 @@
                                 Fields enclosed by 
                             </label>
                             <div class="col-lg-4">
-                                <input class="form-control m-input" type="text" value='"' id="example-text-input">
+                                <input class="form-control m-input" type="text" value='"' id="f_enc" name="f_enc">
                             </div>
                             <div class="col-lg-3 m-checkbox-list">
                                 <label class="m-checkbox">
-                                    <input type="checkbox" checked="checked">
+                                    <input type="checkbox" checked="checked" id="opt" name="opt">
                                     optionally
                                     <span></span>
                                 </label>
@@ -138,7 +138,7 @@
                                 Fields escaped by 
                             </label>
                             <div class="col-lg-4">
-                                <input class="form-control m-input" type="text" value='"' id="example-text-input">
+                                <input class="form-control m-input" type="text" value='\\' id="f_esc" name="f_esc">
                             </div>
                         </div>
 
@@ -147,7 +147,7 @@
                                 Lines terminated by 
                             </label>
                             <div class="col-lg-4">
-                                <input class="form-control m-input" type="text" value="\r\n" id="example-text-input">
+                                <input class="form-control m-input" type="text" value="\r\n" id="l_term" name="l_term">
                             </div>
                         </div>
                     </div>
@@ -162,17 +162,17 @@
                         <div class="col-lg-12 form-group m-form__group row">                    
                             <div class="m-radio-list">
                                 <label class="m-radio">
-                                    <input type="radio" name="example_1" value="1">
+                                    <input type="radio" name="opt_ins" value="0">
                                     INSERT (may throw errors)
                                     <span></span>
                                 </label>
                                 <label class="m-radio">
-                                    <input type="radio" name="example_1" value="2" checked="checked">
+                                    <input type="radio" name="opt_ins" value="1" checked="checked">
                                     INSERT IGNORE (duplicates)
                                     <span></span>
                                 </label>
                                 <label class="m-radio">
-                                    <input type="radio" name="example_1" value="1">
+                                    <input type="radio" name="opt_ins" value="2">
                                     REPLACE (may throw errors)
                                     <span></span>
                                 </label>
@@ -225,7 +225,7 @@
                                 <p></p>
                                 <div class="m-checkbox-list">
                                     <label class="m-checkbox">
-                                        <input type="checkbox">
+                                        <input type="checkbox" id="ch_all" name="ch_all">
                                         All
                                         <span></span>
                                     </label>
@@ -244,7 +244,7 @@
             </div>
 
             <div style="float: right;">
-                <button type="button" class="btn btn-primary" style="margin-right: 20px;">
+                <button type="button" class="btn btn-primary" id="btn_import" name="btn_import" style="margin-right: 20px;">
                     Import
                 </button>
                 <button type="button" class="btn btn-secondary">
@@ -283,7 +283,6 @@
                 });
 
                 function get_tbl_list() {
-                    console.log("get_tbl_list : " +  $("#db_list").val());
                     $.ajax({
                         url: "http://localhost/csv/func.php?r=get_tbl_list&db=" + $("#db_list").val(),
                         type: "GET",
@@ -300,7 +299,6 @@
                 } 
 
                 function get_col_list() {
-                    console.log("get_col_list : " +  $("#db_list").val());
                     $.ajax({
                         url: "http://localhost/csv/func.php?r=get_col_list&db=" + $("#db_list").val() + "&tbl=" + $("#tbl_list").val(),
                         type: "GET",
@@ -325,14 +323,75 @@
 
                 $("#to_up").click(function() {
                     var cols = $("#col_list").children("div")
-                    console.log("length = " + $(cols).length)
-                    for($i = 0; $i < $(cols).length; $i++) {
-                        console.log($i + "  :  " + $(cols[$i]).children("label:first").children("input:first").prop("checked"));
-                        console.log($i + "  :  " + $(cols[$i]).val() );
-                        // if ($(cols[$i]).children("input").hasAttribute("checked")) {
-                        //     console.log("checked :: " + $(cols[$i]).children("span").text())
-                        // }
+                    for(var i = 1; i < $(cols).length; i++) {
+                        if ($(cols[i]).children("label:first").children("input:first").prop("checked")) {
+                            var tt = $(cols[i]).children("label:first").children("span:first").text();
+                            $(cols[i]).children("label:first").children("span:first").text(" "+$(cols[i-1]).children("label:first").children("span:first").text());
+                            $(cols[i-1]).children("label:first").children("span:first").text(" " + tt);
+                            
+                            $(cols[i]).children("label:first").children("input:first").prop("checked", $(cols[i-1]).children("label:first").children("input:first").prop("checked"))
+                            $(cols[i-1]).children("label:first").children("input:first").prop("checked", true)
+                            
+                            break;
+                        }
+                    }
+                });
 
+                $("#to_down").click(function() {
+                    var cols = $("#col_list").children("div")
+                    for(var i = 0; i < $(cols).length - 1; i++) {
+                        if ($(cols[i]).children("label:first").children("input:first").prop("checked")) {
+                            var tt = $(cols[i]).children("label:first").children("span:first").text();
+                            $(cols[i]).children("label:first").children("span:first").text(" "+$(cols[i+1]).children("label:first").children("span:first").text());
+                            $(cols[i+1]).children("label:first").children("span:first").text(" " + tt);
+                            
+                            $(cols[i]).children("label:first").children("input:first").prop("checked", $(cols[i+1]).children("label:first").children("input:first").prop("checked"))
+                            $(cols[i+1]).children("label:first").children("input:first").prop("checked", true)
+                            
+                            break;
+                        }
+                    }
+                });
+
+                $("#btn_import").click(function() {
+                    console.log("f_term = " + $("#f_term").val());
+                    console.log("f_enc = " + $("#f_enc").val());
+                    console.log("opt = " + $("#opt").val());
+                    console.log("f_esc = " + $("#f_esc").val());
+                    console.log("l_term = " + $("#l_term").val());
+                    console.log("ign = " + $("#m_touchspin_5").val());
+                    console.log("trunc = " + $("#trunc").val());
+                    console.log("opt_ins = " + $("input[name='opt_ins']:checked").val());
+                    console.log("db = " + $("#db_list").val());
+                    console.log("tbl = " + $("#tbl_list").val());
+                    c_list = [];
+                    var cols = $("#col_list").children("div")
+                    for(var i = 0; i < $(cols).length; i++) {
+                        if ($(cols[i]).children("label:first").children("input:first").prop("checked")) {
+                            c_list.push($(cols[i]).children("label:first").children("span:first").text().trim());
+                        }
+                    }
+                    console.log("col_list = " + c_list.join("#"))
+
+                    $.ajax({
+                        url: "http://localhost/csv/func.php?r=import",
+                        type: "POST",
+                        data: { f_term: $("#f_term").val(), f_enc: $("#f_enc").val(), opt: $("#opt").val(), f_esc: $("#f_esc").val(), l_term: $("#l_term").val(), 
+                                ign: $("#m_touchspin_5").val(), trunc: $("#trunc").val(), opt_ins: $("input[name='opt_ins']:checked").val(), db: $("#db_list").val(), 
+                                tbl: $("#tbl_list").val(), col_list: c_list.join("#") },       
+                        success: function (result) { 
+                            console.log(result);                        
+                        },
+                        error: function (error) {
+                            
+                        }       
+                    });
+                });
+
+                $("#ch_all").click(function() {
+                    var cols = $("#col_list").children("div")
+                    for(var i = 0; i < $(cols).length; i++) {
+                        $(cols[i]).children("label:first").children("input:first").prop("checked", $("#ch_all").prop("checked"));
                     }
                 });
             });
