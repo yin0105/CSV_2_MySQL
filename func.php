@@ -52,55 +52,115 @@ if($req == "get_db_list") {
     }
     echo $res;    
 } else if($req == "import") {
-    echo $_POST["f_term"];
     $f_term = $_POST["f_term"];  
     $f_enc = $_POST["f_enc"]; 
     $f_esc = $_POST["f_esc"]; 
     $l_term = $_POST["l_term"]; 
-    // $f_term = str_replace("\\", "\\\\", $_POST["f_term"]);  
-    // $f_enc = str_replace("\\", "\\\\", $_POST["f_enc"]); 
-    // $f_esc = str_replace("\\", "\\\\", $_POST["f_esc"]); 
-    // $l_term = str_replace("\\", "\\\\", $_POST["l_term"]); 
-    $opt = $_POST["opt"]=="on"?" OPTIONALLY ": " "; 
+    $opt = $_POST["opt"]=="true"?"OPTIONALLY ": " "; 
     $ign = $_POST["ign"];
     $trunc = $_POST["trunc"];
     $opt_ins = $_POST["opt_ins"];
     $db = $_POST["db"]; 
     $tbl = $_POST["tbl"]; 
+    $encoding = $_POST["encoding"];
+    $f_name = $_POST["f_name"]; 
     $col_list = "(`" . join("`, `", explode("#", $_POST["col_list"])) . "`);";
 
-    echo "<script>alert('f_term = '" . $_POST['f_term'] . ");</script>";
+    while(! file_exists($f_name)) {
+        sleep(1);
+    }
 
-    $sql = "LOAD DATA LOCAL INFILE 'D:\\\\xampp\\\\mysql\\\\data\\\\yoyo\\\\sample.csv' 
-    INTO TABLE `" . $db . "`.`" . $tbl . "`
+    $sql = "";
+    if ($trunc == "true") {
+        $sql = "TRUNCATE TABLE `" . $db . "`.`" . $tbl . "`;
+        ";
+        if($result = mysqli_query($link, $sql)) {
+            echo $sql;
+        } else {
+            echo mysqli_error($link);
+        }
+    }
+    $sql = "LOAD DATA LOCAL INFILE '". $f_name . "' 
+    " . $opt_ins . " INTO TABLE `" . $db . "`.`" . $tbl . "`
+    CHARACTER SET ". $encoding . "
     FIELDS ESCAPED BY '" . $f_esc . "' 
     TERMINATED BY '" . $f_term . "' 
     " . $opt . " ENCLOSED BY '" . $f_enc . "' 
-    LINES TERMINATED BY '" . $l_term . "' 
+    LINES TERMINATED BY '" . $l_term . "'  
+    IGNORE " . $ign . " LINES 
     " . $col_list ;
-
     if($result = mysqli_query($link, $sql)) {
         echo $sql;
     } else {
         echo mysqli_error($link);
     }
+} else if($req == "upload") {   
+
+    $currentDirectory = getcwd();
+    $errors = []; // Store errors here
+    $fileExtensionsAllowed = ['csv','txt']; // These will be the only file extensions allowed 
+
+    $fileName = $_FILES['f_name']['name'];
+    $fileTmpName  = $_FILES['f_name']['tmp_name'];
+    $fileType = $_FILES['f_name']['type'];
+    $fileExtension = strtolower(end(explode('.',$fileName)));
+
+    $uploadPath = $currentDirectory . "/" . basename($fileName); 
+
+    if (! in_array($fileExtension,$fileExtensionsAllowed)) {
+        $errors[] = "This file extension is not allowed. Please upload a CSV or TXT file";
+    } else {
+        $didUpload = move_uploaded_file($fileTmpName, $uploadPath);
+        if ($didUpload) {
+            echo "The file " . basename($fileName) . " has been uploaded";
+        } else {
+            echo "An error occurred. Please contact the administrator.";
+        }
+    }
+
+
+    $f_term = $_POST["f_term"];  
+    $f_enc = $_POST["f_enc"]; 
+    $f_esc = $_POST["f_esc"]; 
+    $l_term = $_POST["l_term"]; 
+    $opt = isset($_POST["opt"])?"OPTIONALLY ": " "; 
+    $ign = $_POST["m_touchspin_5"];
+    $opt_ins = $_POST["opt_ins"];
+    $db = $_POST["db_list"]; 
+    $tbl = $_POST["tbl_list"]; 
+    $encoding = $_POST["charset_list"];
+    $col_list = "(`" . join("`, `", explode("#", $_POST["field_list"])) . "`);";
+
+    $sql = "";
+    if (isset($_POST["trunc"])) {
+        $sql = "TRUNCATE TABLE `" . $db . "`.`" . $tbl . "`;
+        ";
+        if($result = mysqli_query($link, $sql)) {
+            echo $sql;
+        } else {
+            echo mysqli_error($link);
+        }
+    }
+    $sql = "LOAD DATA LOCAL INFILE '". $fileName . "' 
+    " . $opt_ins . " INTO TABLE `" . $db . "`.`" . $tbl . "`
+    CHARACTER SET ". $encoding . "
+    FIELDS ESCAPED BY '" . $f_esc . "' 
+    TERMINATED BY '" . $f_term . "' 
+    " . $opt . " ENCLOSED BY '" . $f_enc . "' 
+    LINES TERMINATED BY '" . $l_term . "'  
+    IGNORE " . $ign . " LINES 
+    " . $col_list ;
+
+    // echo "<br>". $sql;
+    if($result = mysqli_query($link, $sql)) {
+        echo $sql;
+    } else {
+        echo mysqli_error($link);
+    }
+
+    header("Location: {$_SERVER['HTTP_REFERER']}");
+	exit;
 }
 
-
-
-//     $sql = "LOAD DATA LOCAL INFILE 'D:\\\\xampp\\\\mysql\\\\data\\\\yoyo\\\\sample.csv' 
-//     INTO TABLE yoyo.sample
-//     FIELDS ESCAPED BY '\\\\' 
-//     TERMINATED BY ',' 
-//     OPTIONALLY ENCLOSED BY '\"' 
-//     LINES TERMINATED BY '\\r\\n' 
-//     (`country`, `country_code`, `state`, `state_code`);
-// ";
-
-//     if($result = mysqli_query($link, $sql)) {
-//         echo "executed";
-//     } else {
-//         echo mysqli_error($link);
-//     }
 mysqli_close($link);
 ?>

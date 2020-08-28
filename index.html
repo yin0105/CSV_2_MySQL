@@ -56,29 +56,32 @@
         </div>
         
         <div class="container_">
-            <div class="row">
-                <div class="col-lg-12 my_container_outer">
-                    <div class="col-lg-12 my_container">
-                        <div class="col-lg-12 form-group m-form__group row">
-                            <div class="col-lg-1">
-                                Filename :
+            <form action="func.php?r=upload" id="my_form" name="my_form" method="post" enctype="multipart/form-data">
+                <input type="hidden" id="field_list" name="field_list">
+                <div class="row">
+                    <div class="col-lg-12 my_container_outer">
+                        <div class="col-lg-12 my_container">
+                            <div class="col-lg-12 form-group m-form__group row">
+                                <div class="col-lg-1">
+                                    Filename :
+                                </div>
+                                <div class="col-lg-11">
+                                    <input type="file" id="f_name" name="f_name" class="form-control-file">
+                                </div>
                             </div>
-                            <div class="col-lg-11">
-                                <input type="file" id="example-fileinput" class="form-control-file">
-                            </div>
-                        </div>
-                        <div class="col-lg-12 form-group m-form__group row">
-                            <div class="col-lg-1">
-                                Encoding :
-                            </div>
-                            <div class="col-lg-5">
-                                <select class="custom-select " id="charset_list" name="charset_list">
-                                </select>
+                            <div class="col-lg-12 form-group m-form__group row">
+                                <div class="col-lg-1">
+                                    Encoding :
+                                </div>
+                                <div class="col-lg-5">
+                                    <select class="custom-select " id="charset_list" name="charset_list">
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            
 
 
             <div class="col-lg-12 form-group m-form__group row" style="padding: 0px">
@@ -89,7 +92,7 @@
                                 Ignore first :
                             </label>
                             <div class="col-lg-2">
-                                <input id="m_touchspin_5" type="text" class="form-control bootstrap-touchspin-vertical-btn" value="0" name="demo1" type="text">
+                                <input id="m_touchspin_5" name="m_touchspin_5" type="text" class="form-control bootstrap-touchspin-vertical-btn" value="0" name="demo1" type="text">
                             </div>
                             <label class="col-form-label col-lg-1">
                                 lines
@@ -162,17 +165,17 @@
                         <div class="col-lg-12 form-group m-form__group row">                    
                             <div class="m-radio-list">
                                 <label class="m-radio">
-                                    <input type="radio" name="opt_ins" value="0">
+                                    <input type="radio" name="opt_ins" value="">
                                     INSERT (may throw errors)
                                     <span></span>
                                 </label>
                                 <label class="m-radio">
-                                    <input type="radio" name="opt_ins" value="1" checked="checked">
+                                    <input type="radio" name="opt_ins" value="IGNORE" checked="checked">
                                     INSERT IGNORE (duplicates)
                                     <span></span>
                                 </label>
                                 <label class="m-radio">
-                                    <input type="radio" name="opt_ins" value="2">
+                                    <input type="radio" name="opt_ins" value="REPLACE">
                                     REPLACE (may throw errors)
                                     <span></span>
                                 </label>
@@ -251,7 +254,10 @@
                     Cancel
                 </button>
             </div>            
+
+            </form>
         </div>
+
         <script src="https://code.jquery.com/jquery-3.5.1.min.js" type="text/javascript"></script>
         <script>
             $(document).ready(function(){
@@ -353,17 +359,18 @@
                     }
                 });
 
-                $("#btn_import").click(function() {
-                    console.log("f_term = " + $("#f_term").val());
-                    console.log("f_enc = " + $("#f_enc").val());
-                    console.log("opt = " + $("#opt").val());
-                    console.log("f_esc = " + $("#f_esc").val());
-                    console.log("l_term = " + $("#l_term").val());
-                    console.log("ign = " + $("#m_touchspin_5").val());
-                    console.log("trunc = " + $("#trunc").val());
-                    console.log("opt_ins = " + $("input[name='opt_ins']:checked").val());
-                    console.log("db = " + $("#db_list").val());
-                    console.log("tbl = " + $("#tbl_list").val());
+                $("#btn_import").click(function() {                    
+                    // console.log("f_term = " + $("#f_term").val());
+                    // console.log("f_enc = " + $("#f_enc").val());
+                    // console.log("opt = " + $("#opt").is(":checked"));
+                    // console.log("f_esc = " + $("#f_esc").val());
+                    // console.log("l_term = " + $("#l_term").val());
+                    // console.log("ign = " + $("#m_touchspin_5").val());
+                    // console.log("trunc = " + $("#trunc").is(":checked"));
+                    // console.log("opt_ins = " + $("input[name='opt_ins']:checked").val());
+                    // console.log("db = " + $("#db_list").val());
+                    // console.log("tbl = " + $("#tbl_list").val());
+                    // console.log("encoding = " + $("#charset_list").val());
                     c_list = [];
                     var cols = $("#col_list").children("div")
                     for(var i = 0; i < $(cols).length; i++) {
@@ -371,21 +378,23 @@
                             c_list.push($(cols[i]).children("label:first").children("span:first").text().trim());
                         }
                     }
-                    console.log("col_list = " + c_list.join("#"))
+                    $("#field_list").val(c_list.join("#"));
+                    // console.log("col_list = " + c_list.join("#"))
 
-                    $.ajax({
-                        url: "http://localhost/csv/func.php?r=import",
-                        type: "POST",
-                        data: { f_term: $("#f_term").val(), f_enc: $("#f_enc").val(), opt: $("#opt").val(), f_esc: $("#f_esc").val(), l_term: $("#l_term").val(), 
-                                ign: $("#m_touchspin_5").val(), trunc: $("#trunc").val(), opt_ins: $("input[name='opt_ins']:checked").val(), db: $("#db_list").val(), 
-                                tbl: $("#tbl_list").val(), col_list: c_list.join("#") },       
-                        success: function (result) { 
-                            console.log(result);                        
-                        },
-                        error: function (error) {
+                    // $.ajax({
+                    //     url: "http://localhost/csv/func.php?r=import",
+                    //     type: "POST",
+                    //     data: { f_term: $("#f_term").val(), f_enc: $("#f_enc").val(), opt: $("#opt").is(":checked"), f_esc: $("#f_esc").val(), l_term: $("#l_term").val(), 
+                    //             ign: $("#m_touchspin_5").val(), trunc: $("#trunc").is(":checked"), opt_ins: $("input[name='opt_ins']:checked").val(), db: $("#db_list").val(), 
+                    //             tbl: $("#tbl_list").val(), col_list: c_list.join("#"), encoding: $("#charset_list").val(), f_name: $("#f_name").val() },       
+                    //     success: function (result) { 
+                    //         console.log(result);                        
+                    //     },
+                    //     error: function (error) {
                             
-                        }       
-                    });
+                    //     }       
+                    // });
+                    document.forms[0].submit();
                 });
 
                 $("#ch_all").click(function() {
